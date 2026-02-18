@@ -17,18 +17,23 @@ jobs:
       - name: Install SnowSQL
         run: |
           curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.32-linux_x86_64.bash
+          # Set destination and suppress interactive prompts
+          export SNOWSQL_DEST=~/bin
+          export SNOWSQL_LOGIN_SHELL=~/.profile
           bash snowsql-1.2.32-linux_x86_64.bash
+          # Add the binary to the GitHub Path so the next step can find 'snowsql'
+          echo "PATH=$PATH:~/bin" >> $GITHUB_ENV
 
       - name: Deploy SQL files
         env:
-          SNOWSQL_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
-          SNOWSQL_USER: ${{ secrets.SNOWFLAKE_USERNAME }}
-          SNOWSQL_PWD: ${{ secrets.SNOWFLAKE_PASSWORD }}
-          SNOWSQL_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
-          SNOWSQL_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          SNOWSQL_ACCOUNT: ${{ secrets.SNOWSQL_ACCOUNT }}
+          SNOWSQL_USER: ${{ secrets.SNOWSQL_USERNAME }}
+          SNOWSQL_PWD: ${{ secrets.SNOWSQL_PASSWORD }}
+          SNOWSQL_ROLE: ${{ secrets.SNOWSQL_ROLE }}
+          SNOWSQL_WAREHOUSE: ${{ secrets.SNOWSQL_WAREHOUSE }}
         run: |
-          snowsql -a $SNOWSQL_ACCOUNT \
-                   -u $SNOWSQL_USER \
-                   -r $SNOWSQL_ROLE \
-                   -w $SNOWSQL_WAREHOUSE \
-                   -f snowflake/dev/ddl/V1_0_0__create_customer_table.sql
+          ~/bin/snowsql -a $SNOWSQL_ACCOUNT \
+            -u $SNOWSQL_USER \
+            -r $SNOWSQL_ROLE \
+            -w $SNOWSQL_WAREHOUSE \
+            -f snowflake/dev/ddl/v1_0_0__create_customer_table.sql
